@@ -63,11 +63,11 @@ if (trigger === 'tool.response.v1') {
 
 **WITH context-builder:**
 ```
-note.v1 created
+user.message.v1 created
   ↓
 context-builder assembles rich context:
-  - Vector search: 5 similar notes (semantic understanding)
-  - Recent: 100 existing tags (consistency)
+  - Vector search: 5 similar conversations (semantic understanding)
+  - Recent: 20 messages in session (conversation history)
   - Latest: Tool catalog (capabilities)
   ↓
 Creates agent.context.v1 (pre-assembled, LLM-optimized)
@@ -77,7 +77,7 @@ Agent receives rich context → Makes intelligent decisions
 
 **WITHOUT context-builder:**
 ```
-note.v1 created
+user.message.v1 created
   ↓
 Agent tries to process directly
   ↓
@@ -88,7 +88,7 @@ Agent has no data → FAILS
 
 **Proof:** 
 - ✅ default-chat-assistant WORKS (uses context-builder)
-- ❌ Note agents FAIL (bypass context-builder)
+- ❌ Direct event subscriptions FAIL (bypass context-builder)
 
 **This is not optional** - context-builder is THE reason agents can reason!
 
@@ -109,14 +109,10 @@ Agent has no data → FAILS
 
 | Component | Status | Issue | Solution |
 |-----------|--------|-------|----------|
-| context-builder | 🟡 Limited | Hardcoded to user.message.v1 only | Add note.v1 handling (plan ready) |
-| note-tagger | 🔴 Broken | Bypasses context-builder, gets empty context | Delete, replace with note-processor |
-| note-summarizer | 🔴 Broken | Same issue | Delete, replace with note-processor |
-| note-insights | 🔴 Broken | Same issue | Delete, replace with note-processor |
-| note-eli5 | 🔴 Broken | Same issue | Delete, replace with note-processor |
+| context-builder | 🟡 Limited | Hardcoded to user.message.v1 only | Extend for domain-specific triggers as needed |
 
 **Solutions Ready:**
-- 🔵 **NOTE_AGENTS_SOLUTION.md** - Complete fix with Rust code, JSON config, implementation plan
+- Domain functionality should emerge from primitives (no special note agents needed)
 
 ### 🗺️ Architectural Overview
 
@@ -1355,9 +1351,9 @@ Formats final response
 EXIT
 ```
 
-**Counter-Example: note agents (Broken ❌)**
+**Counter-Example: Direct subscriptions (Broken ❌)**
 ```
-Subscribes directly to note.v1 (bypasses context-builder)
+Subscribes directly to domain.v1 (bypasses context-builder)
   ↓
 assembleContextFromSubscriptions() returns EMPTY
   ↓

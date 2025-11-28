@@ -268,35 +268,6 @@ curl -X PATCH http://localhost:8081/breadcrumbs/$ID \
     "input_schema": {...},
     "output_schema": {...}
   }
-}
-```
-
-### Old Tool Definition (v1.0 - DEPRECATED)
-```json
-{
-  "schema_name": "tool.v1",
-  "title": "OpenRouter Tool",
-  "tags": ["workspace:tools"],
-  "context": {
-    "name": "openrouter",
-    "description": "Call LLM via OpenRouter API",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "messages": {"type": "array"},
-        "model": {"type": "string"}
-      },
-      "required": ["messages", "model"]
-    },
-    "subscriptions": {
-      "selectors": [
-        {"schema_name": "llm.request.v1"}
-      ]
-    }
-  }
-}
-```
-
 ---
 
 ## Selector Examples

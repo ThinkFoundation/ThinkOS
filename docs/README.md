@@ -7,12 +7,12 @@
 ## 🚀 Start Here
 
 **New to RCRT?**
-1. Read [../QUICK_START.md](../QUICK_START.md) - Get running in minutes (15 min)
-2. Read [SYSTEM_ARCHITECTURE.md](SYSTEM_ARCHITECTURE.md) **Executive Summary** - Quick orientation (5 min) ⭐
-3. Read [RCRT_PRINCIPLES.md](RCRT_PRINCIPLES.md) - Learn the philosophy (30 min)
+1. Read [CORE_PRINCIPLES.md](CORE_PRINCIPLES.md) - The three primitives (10 min) ⭐ **START HERE**
+2. Read [SYSTEM_ARCHITECTURE.md](SYSTEM_ARCHITECTURE.md) **Executive Summary** - Quick orientation (5 min)
+3. Read [../QUICK_START.md](../QUICK_START.md) - Get running in minutes (15 min)
 4. Deep dive [SYSTEM_ARCHITECTURE.md](SYSTEM_ARCHITECTURE.md) - Complete system (2-3 hours)
 
-> 💡 **Tip:** The SYSTEM_ARCHITECTURE.md executive summary gives you everything you need to start. Deep dive sections as needed.
+> 💡 **Tip:** CORE_PRINCIPLES.md defines RCRT in ~300 lines. Everything else is implementation detail.
 
 ---
 
@@ -20,7 +20,17 @@
 
 ### System Design & Architecture
 
-**[SYSTEM_ARCHITECTURE.md](SYSTEM_ARCHITECTURE.md)** ⭐ **START HERE**
+**[CORE_PRINCIPLES.md](CORE_PRINCIPLES.md)** ⭐ **START HERE FIRST**
+- The three primitives (breadcrumbs, events, tags)
+- Fire-and-forget pattern (THE foundational execution model)
+- context-builder intelligence layer
+- Agents vs tools distinction
+- Core schemas (9 essential)
+- Anti-patterns (forbidden)
+- Validation checklist
+- **Defines RCRT in ~300 lines - Read this first!**
+
+**[SYSTEM_ARCHITECTURE.md](SYSTEM_ARCHITECTURE.md)** ⭐ **IMPLEMENTATION DETAILS**
 - **Executive Summary** (5 min) - Quick orientation, status, critical patterns
 - Complete system design (1,900+ lines total)
 - All 9 services documented with I/O and patterns
@@ -30,13 +40,12 @@
 - Agents vs Tools (requirements + counter-examples)
 - Current state (🟢 working, 🟡 limited, 🔴 broken)
 - Performance, security, validation
-- **THE definitive reference - Read executive summary first!**
 
-**[RCRT_PRINCIPLES.md](RCRT_PRINCIPLES.md)**
-- Core philosophy
+**[RCRT_PRINCIPLES.md](RCRT_PRINCIPLES.md)** (Extended Examples)
+- Core philosophy with detailed examples
 - Design principles
-- Architectural theory
-- Why RCRT is built this way
+- Metrics and performance data
+- Advanced patterns
 
 ---
 
@@ -66,17 +75,6 @@
 
 ---
 
-### Known Issues & Solutions
-
-**[NOTE_AGENTS_SOLUTION.md](NOTE_AGENTS_SOLUTION.md)** ⭐ **ACTIONABLE FIX**
-- Complete solution for note processing
-- Problem diagnosis
-- Implementation plan (Rust + JSON)
-- Expected results
-- Ready to implement
-
----
-
 ### API Specification
 
 **[openapi.json](openapi.json)**
@@ -97,9 +95,6 @@
 
 **I want to integrate:**
 → Integration_Guide.md + QUICK_REFERENCE.md
-
-**I want to fix note agents:**
-→ NOTE_AGENTS_SOLUTION.md
 
 **I want API details:**
 → openapi.json + QUICK_REFERENCE.md
