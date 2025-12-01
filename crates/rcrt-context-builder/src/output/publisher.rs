@@ -90,12 +90,17 @@ impl ContextPublisher {
                 continue;
             }
             
-            match bc.schema_name.as_str() {
-                "tool.code.v1" => tools.push(bc),
-                "knowledge.v1" | "note.v1" => knowledge.push(bc),
-                "user.message.v1" | "agent.response.v1" => messages.push(bc),
-                "browser.tab.context.v1" | "browser.page.context.v1" => browser.push(bc),
-                _ => other.push(bc),
+            // Categorize by tags (generic, extensible)
+            if bc.tags.iter().any(|t| t.starts_with("category:tool") || t.starts_with("tool:")) {
+                tools.push(bc);
+            } else if bc.tags.iter().any(|t| t.starts_with("category:knowledge") || t == "knowledge" || t == "note") {
+                knowledge.push(bc);
+            } else if bc.tags.iter().any(|t| t.starts_with("category:message") || t.starts_with("user:") || t.starts_with("agent:response")) {
+                messages.push(bc);
+            } else if bc.tags.iter().any(|t| t.starts_with("category:browser") || t.starts_with("browser:")) {
+                browser.push(bc);
+            } else {
+                other.push(bc);
             }
         }
         

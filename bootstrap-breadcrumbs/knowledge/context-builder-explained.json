@@ -4,6 +4,7 @@
   "description": "Why context-builder makes agents intelligent through vector search and context assembly",
   "semantic_version": "1.0.0",
   "tags": [
+    "category:knowledge",
     "workspace:knowledge",
     "context-assembly",
     "semantic-search",

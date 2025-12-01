@@ -4,6 +4,7 @@
   "description": "The foundation of RCRT's architecture - every service follows this pattern for stateless, scalable design",
   "semantic_version": "1.0.0",
   "tags": [
+    "category:knowledge",
     "workspace:knowledge",
     "architecture",
     "patterns",

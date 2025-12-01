@@ -4,6 +4,7 @@
   "description": "Deep dive into RCRT agent architecture: context-builder pattern, fire-and-forget execution, and why agents are context + reasoning",
   "semantic_version": "1.0.0",
   "tags": [
+    "category:knowledge",
     "workspace:knowledge",
     "agents",
     "documentation",

@@ -2,6 +2,7 @@
   "schema_name": "knowledge.v1",
   "title": "Code Validation Rules - Evolving Security Patterns",
   "tags": [
+    "category:knowledge",
     "workspace:knowledge",
     "validation",
     "security",
@@ -32,7 +33,12 @@
         "required": true,
         "format": "exclude-only (v2.2.0)",
         "example": {
-          "exclude": ["code", "permissions", "limits", "ui_schema"]
+          "exclude": [
+            "code",
+            "permissions",
+            "limits",
+            "ui_schema"
+          ]
         },
         "why": "Context-builder uses llm_hints to exclude verbose fields from agent context. Also used for embedding generation (semantic search quality).",
         "validation": "MUST have llm_hints field with exclude array"

@@ -368,56 +368,17 @@ impl EventHandler {
     // ============ HELPER FUNCTIONS ============
     
     /// Load graph for seed breadcrumbs
+    /// NOTE: breadcrumb_edges table was removed in migration 0012 (GNN cleanup)
+    /// Now returns a simple graph with only seed nodes, no edges
     async fn load_graph_for_seeds(&self, seed_ids: &[uuid::Uuid]) -> Result<crate::graph::SessionGraph> {
-        use crate::graph::{SessionGraph, Edge, EdgeType};
-        
-        // Load breadcrumb_edges for all seeds (2 hops)
-        let edges_query = sqlx::query_as::<_, (uuid::Uuid, uuid::Uuid, i16, f32)>(
-            "SELECT from_id, to_id, edge_type, weight 
-             FROM breadcrumb_edges 
-             WHERE from_id = ANY($1) OR to_id = ANY($1)
-             LIMIT 1000"
-        )
-        .bind(seed_ids)
-        .fetch_all(self.vector_store.pool())
-        .await?;
+        use crate::graph::SessionGraph;
         
         let mut graph = SessionGraph::new(String::new());  // Generic graph, not session-specific
         
-        // Add seed nodes
+        // Add seed nodes only (no edges - breadcrumb_edges table removed)
         for &seed_id in seed_ids {
             if let Some(bc) = self.vector_store.get_by_id(seed_id).await? {
                 graph.add_node(breadcrumb_row_to_node(bc));
-            }
-        }
-        
-        // Add edges
-        for (from_id, to_id, edge_type_num, weight) in edges_query {
-            let edge_type = match edge_type_num {
-                0 => EdgeType::Causal,
-                1 => EdgeType::Temporal,
-                2 => EdgeType::TagRelated,
-                3 => EdgeType::Semantic,
-                _ => EdgeType::Semantic,
-            };
-            
-            graph.add_edge(Edge {
-                from: from_id,
-                to: to_id,
-                edge_type,
-                weight,
-            });
-            
-            // Ensure both nodes exist
-            if !graph.nodes.contains_key(&from_id) {
-                if let Some(bc) = self.vector_store.get_by_id(from_id).await? {
-                    graph.add_node(breadcrumb_row_to_node(bc));
-                }
-            }
-            if !graph.nodes.contains_key(&to_id) {
-                if let Some(bc) = self.vector_store.get_by_id(to_id).await? {
-                    graph.add_node(breadcrumb_row_to_node(bc));
-                }
             }
         }
         

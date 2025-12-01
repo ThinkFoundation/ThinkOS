@@ -2,6 +2,7 @@
   "schema_name": "context.blacklist.v1",
   "title": "Context Assembly Blacklist",
   "tags": [
+    "category:system",
     "context:config",
     "system:bootstrap",
     "system:internal"

@@ -2,6 +2,7 @@
   "schema_name": "knowledge.v1",
   "title": "Complete Guide: Astral Browser Automation Tool Creation",
   "tags": [
+    "category:knowledge",
     "knowledge",
     "browser-automation",
     "astral",
@@ -14,7 +15,6 @@
     "last_updated": "2025-11-10",
     "content": {
       "summary": "Comprehensive guide for creating browser automation tools using the Astral library (jsr:@astral/astral). Astral is a high-level Puppeteer/Playwright-like library for Deno that enables headless browser control, web scraping, testing, and automation.",
-      
       "astral_overview": {
         "description": "Astral is a browser automation library built specifically for Deno",
         "source": "https://github.com/lino-levan/astral",
@@ -39,7 +39,6 @@
           "state_management": "Manage multiple browsers and pages simultaneously"
         }
       },
-      
       "basic_usage_pattern": {
         "description": "Standard Astral usage pattern (from official docs)",
         "example_code": "import { launch } from 'jsr:@astral/astral';\n\n// Launch browser\nawait using browser = await launch();\n\n// Open page\nawait using page = await browser.newPage('https://example.com');\n\n// Interact\nconst button = await page.$('button');\nawait button!.click();\n\n// Screenshot\nconst screenshot = await page.screenshot();\n\n// Evaluate JS\nconst value = await page.evaluate(() => document.title);",
@@ -51,7 +50,6 @@
           "page.screenshot() - Capture visual state"
         ]
       },
-      
       "rcrt_tool_structure": {
         "description": "How to structure Astral as a tool.code.v1 breadcrumb",
         "critical_requirements": [
@@ -81,13 +79,19 @@
         },
         "validation_note": "See tool-validation-rules.json for complete validation checklist and permission requirements"
       },
-      
       "complete_working_example": {
         "description": "Full tool.code.v1 definition for Astral browser automation",
         "structure": {
           "schema_name": "tool.code.v1",
           "title": "Astral Browser Automation (Self-Contained)",
-          "tags": ["tool", "tool:astral", "workspace:tools", "self-contained", "browser", "automation"],
+          "tags": [
+            "tool",
+            "tool:astral",
+            "workspace:tools",
+            "self-contained",
+            "browser",
+            "automation"
+          ],
           "context": {
             "name": "astral",
             "description": "High-level browser automation using Astral (Puppeteer/Playwright-like for Deno). Launch browsers, navigate, interact with elements, take screenshots, and extract content.",
@@ -100,7 +104,17 @@
               "type": "object",
               "properties": {
                 "action": {
-                  "enum": ["launch", "navigate", "screenshot", "click", "type", "evaluate", "get_content", "wait_for", "close"]
+                  "enum": [
+                    "launch",
+                    "navigate",
+                    "screenshot",
+                    "click",
+                    "type",
+                    "evaluate",
+                    "get_content",
+                    "wait_for",
+                    "close"
+                  ]
                 },
                 "url": "URL for navigate or initial launch",
                 "selector": "CSS selector for click/type/wait",
@@ -109,7 +123,9 @@
                 "browser_id": "Browser instance ID",
                 "page_id": "Page instance ID"
               },
-              "required": ["action"]
+              "required": [
+                "action"
+              ]
             },
             "output_schema": {
               "properties": {
@@ -136,7 +152,6 @@
           }
         }
       },
-      
       "implementation_guide": {
         "state_management": {
           "description": "Astral tools must maintain browser/page state across tool calls",
@@ -148,57 +163,91 @@
           ],
           "id_generation": "function generateId() { return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`; }"
         },
-        
         "action_handlers": {
           "launch": {
             "purpose": "Start new browser instance",
-            "input": {"headless": "boolean", "url": "string (optional)"},
-            "output": {"browser_id": "string", "page_id": "string", "url": "string"},
+            "input": {
+              "headless": "boolean",
+              "url": "string (optional)"
+            },
+            "output": {
+              "browser_id": "string",
+              "page_id": "string",
+              "url": "string"
+            },
             "code_pattern": "const browser = await launch({ headless: true });\nconst page = await browser.newPage(url);\nconst browserId = generateId();\nconst pageId = generateId();\nbrowsers.set(browserId, browser);\npages.set(pageId, page);\nreturn { browser_id: browserId, page_id: pageId };"
           },
-          
           "navigate": {
             "purpose": "Navigate to URL",
-            "input": {"page_id": "string", "url": "string", "wait_until": "networkidle2"},
-            "output": {"success": "boolean", "url": "string"},
+            "input": {
+              "page_id": "string",
+              "url": "string",
+              "wait_until": "networkidle2"
+            },
+            "output": {
+              "success": "boolean",
+              "url": "string"
+            },
             "code_pattern": "const page = pages.get(input.page_id);\nawait page.goto(input.url, { waitUntil: 'networkidle2' });"
           },
-          
           "screenshot": {
             "purpose": "Capture page screenshot",
-            "input": {"page_id": "string"},
-            "output": {"screenshot": "base64 string"},
+            "input": {
+              "page_id": "string"
+            },
+            "output": {
+              "screenshot": "base64 string"
+            },
             "code_pattern": "const screenshot = await page.screenshot();\nconst base64 = btoa(String.fromCharCode(...screenshot));\nreturn { screenshot: base64 };"
           },
-          
           "click": {
             "purpose": "Click element",
-            "input": {"page_id": "string", "selector": "string"},
+            "input": {
+              "page_id": "string",
+              "selector": "string"
+            },
             "code_pattern": "const element = await page.$(selector);\nif (!element) throw new Error('Element not found');\nawait element.click();"
           },
-          
           "type": {
             "purpose": "Type text into element",
-            "input": {"page_id": "string", "selector": "string", "text": "string", "delay": "number"},
+            "input": {
+              "page_id": "string",
+              "selector": "string",
+              "text": "string",
+              "delay": "number"
+            },
             "code_pattern": "const element = await page.$(selector);\nawait element.type(text, { delay: delay || 100 });"
           },
-          
           "evaluate": {
             "purpose": "Run JavaScript in page",
-            "input": {"page_id": "string", "script": "string", "args": "array"},
-            "output": {"value": "any"},
+            "input": {
+              "page_id": "string",
+              "script": "string",
+              "args": "array"
+            },
+            "output": {
+              "value": "any"
+            },
             "code_pattern": "const func = new Function(...argsNames, `return (${script})`);\nconst value = await page.evaluate(func, { args });"
           },
-          
           "get_content": {
             "purpose": "Extract page content",
-            "output": {"title": "string", "text": "string", "links": "array", "headings": "array"},
+            "output": {
+              "title": "string",
+              "text": "string",
+              "links": "array",
+              "headings": "array"
+            },
             "code_pattern": "const content = await page.evaluate(() => ({\n  title: document.title,\n  text: document.body.innerText,\n  links: Array.from(document.querySelectorAll('a')).map(a => ({text: a.textContent, href: a.href})),\n  headings: Array.from(document.querySelectorAll('h1,h2,h3')).map(h => ({level: h.tagName, text: h.textContent}))\n}));"
           },
-          
           "wait_for": {
             "purpose": "Wait for condition",
-            "types": ["selector", "navigation", "networkidle", "time"],
+            "types": [
+              "selector",
+              "navigation",
+              "networkidle",
+              "time"
+            ],
             "code_patterns": {
               "selector": "await page.waitForSelector(selector, { timeout });",
               "navigation": "await page.waitForNavigation({ timeout });",
@@ -208,55 +257,81 @@
           }
         }
       },
-      
       "multi_step_automation_example": {
         "description": "Example workflow: Search and extract results",
         "steps": [
           {
             "step": 1,
             "action": "launch",
-            "input": {"url": "https://deno.land", "headless": true},
-            "output": {"browser_id": "abc123", "page_id": "def456"}
+            "input": {
+              "url": "https://deno.land",
+              "headless": true
+            },
+            "output": {
+              "browser_id": "abc123",
+              "page_id": "def456"
+            }
           },
           {
             "step": 2,
             "action": "click",
-            "input": {"page_id": "def456", "selector": "button.search"},
+            "input": {
+              "page_id": "def456",
+              "selector": "button.search"
+            },
             "note": "Opens search dialog"
           },
           {
             "step": 3,
             "action": "type",
-            "input": {"page_id": "def456", "selector": "#search-input", "text": "astral"},
+            "input": {
+              "page_id": "def456",
+              "selector": "#search-input",
+              "text": "astral"
+            },
             "note": "Types search query"
           },
           {
             "step": 4,
             "action": "wait_for",
-            "input": {"page_id": "def456", "wait_type": "networkidle"},
+            "input": {
+              "page_id": "def456",
+              "wait_type": "networkidle"
+            },
             "note": "Wait for results to load"
           },
           {
             "step": 5,
             "action": "get_content",
-            "input": {"page_id": "def456"},
-            "output": {"title": "Search Results", "text": "...", "links": []}
+            "input": {
+              "page_id": "def456"
+            },
+            "output": {
+              "title": "Search Results",
+              "text": "...",
+              "links": []
+            }
           },
           {
             "step": 6,
             "action": "screenshot",
-            "input": {"page_id": "def456"},
-            "output": {"screenshot": "base64..."}
+            "input": {
+              "page_id": "def456"
+            },
+            "output": {
+              "screenshot": "base64..."
+            }
           },
           {
             "step": 7,
             "action": "close",
-            "input": {"browser_id": "abc123"}
+            "input": {
+              "browser_id": "abc123"
+            }
           }
         ],
         "orchestration_note": "Use workflow tool or agent to chain these actions together"
       },
-      
       "best_practices": [
         "Always store browser_id and page_id from launch response for subsequent actions",
         "Use headless: true for production automation (faster, less resources)",
@@ -269,63 +344,110 @@
         "Use wait_for selector before clicking dynamic content",
         "Limit screenshot size by selecting specific elements if possible"
       ],
-      
       "common_patterns": {
         "scraping": {
           "description": "Extract content from web pages",
-          "actions": ["launch", "navigate", "wait_for (networkidle)", "get_content", "close"],
+          "actions": [
+            "launch",
+            "navigate",
+            "wait_for (networkidle)",
+            "get_content",
+            "close"
+          ],
           "example": "1. Launch browser → 2. Navigate to target → 3. Wait for load → 4. Extract content → 5. Close"
         },
-        
         "form_submission": {
           "description": "Fill and submit web forms",
-          "actions": ["launch", "navigate", "type (multiple fields)", "click (submit)", "wait_for (navigation)", "close"],
+          "actions": [
+            "launch",
+            "navigate",
+            "type (multiple fields)",
+            "click (submit)",
+            "wait_for (navigation)",
+            "close"
+          ],
           "example": "1. Navigate to form → 2. Type into each field → 3. Click submit → 4. Wait for success page"
         },
-        
         "testing": {
           "description": "Automated UI testing",
-          "actions": ["launch", "navigate", "click", "evaluate (assertions)", "screenshot", "close"],
+          "actions": [
+            "launch",
+            "navigate",
+            "click",
+            "evaluate (assertions)",
+            "screenshot",
+            "close"
+          ],
           "example": "1. Navigate to app → 2. Perform actions → 3. Evaluate page state → 4. Screenshot evidence"
         },
-        
         "monitoring": {
           "description": "Periodic website checks",
-          "actions": ["launch", "navigate", "evaluate (check conditions)", "screenshot (if error)", "close"],
+          "actions": [
+            "launch",
+            "navigate",
+            "evaluate (check conditions)",
+            "screenshot (if error)",
+            "close"
+          ],
           "use_case": "Check if website is up, elements are present, or content has changed"
         }
       },
-      
       "integration_with_rcrt": {
         "context_api_usage": {
           "create_breadcrumb": "Store results: await context.api.createBreadcrumb({ schema_name: 'browser.result.v1', context: {...} })",
           "search_breadcrumbs": "Find targets: const targets = await context.api.searchBreadcrumbs({ tag: 'scraping-target' })",
           "get_secret": "API keys: const apiKey = await context.api.getSecret(secretId, 'reason')"
         },
-        
         "workflow_orchestration": {
           "description": "Use workflow tool to chain multiple Astral actions",
           "example": {
             "tool": "workflow",
             "input": {
               "steps": [
-                {"id": "start", "tool": "astral", "input": {"action": "launch", "url": "https://example.com"}},
-                {"id": "click_btn", "tool": "astral", "input": {"action": "click", "selector": "button", "page_id": "${start.page_id}"}},
-                {"id": "screenshot", "tool": "astral", "input": {"action": "screenshot", "page_id": "${start.page_id}"}},
-                {"id": "cleanup", "tool": "astral", "input": {"action": "close", "browser_id": "${start.browser_id}"}}
+                {
+                  "id": "start",
+                  "tool": "astral",
+                  "input": {
+                    "action": "launch",
+                    "url": "https://example.com"
+                  }
+                },
+                {
+                  "id": "click_btn",
+                  "tool": "astral",
+                  "input": {
+                    "action": "click",
+                    "selector": "button",
+                    "page_id": "${start.page_id}"
+                  }
+                },
+                {
+                  "id": "screenshot",
+                  "tool": "astral",
+                  "input": {
+                    "action": "screenshot",
+                    "page_id": "${start.page_id}"
+                  }
+                },
+                {
+                  "id": "cleanup",
+                  "tool": "astral",
+                  "input": {
+                    "action": "close",
+                    "browser_id": "${start.browser_id}"
+                  }
+                }
               ]
             }
           },
           "note": "Workflow tool handles variable interpolation (${stepId.field})"
         },
-        
         "agent_orchestration": {
           "description": "Agents can create multiple tool requests",
           "pattern": "Agent creates 3 tool.request.v1 breadcrumbs: launch → interact → close",
           "benefit": "Fire-and-forget pattern, agent doesn't wait for each step"
         }
       },
-      
       "complete_tool_code_example": {
         "description": "Full implementation ready for tool.code.v1",
         "typescript_code": "import { launch, connect, Browser, Page } from 'jsr:@astral/astral';\n\ninterface Input {\n  action: 'launch' | 'navigate' | 'screenshot' | 'click' | 'type' | 'evaluate' | 'get_content' | 'wait_for' | 'close';\n  headless?: boolean;\n  endpoint?: string;\n  url?: string;\n  wait_until?: 'load' | 'domcontentloaded' | 'networkidle' | 'networkidle2';\n  selector?: string;\n  text?: string;\n  delay?: number;\n  script?: string;\n  args?: any[];\n  wait_type?: 'selector' | 'navigation' | 'networkidle' | 'time';\n  timeout?: number;\n  milliseconds?: number;\n  browser_id?: string;\n  page_id?: string;\n}\n\ninterface Output {\n  success: boolean;\n  action: string;\n  browser_id?: string;\n  page_id?: string;\n  url?: string;\n  screenshot?: string;\n  content?: any;\n  value?: any;\n  error?: string;\n  message?: string;\n}\n\nconst browsers = new Map<string, Browser>();\nconst pages = new Map<string, Page>();\n\nfunction generateId(): string {\n  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;\n}\n\nexport async function execute(input: Input, context: any): Promise<Output> {\n  try {\n    switch (input.action) {\n      case 'launch': return await launchBrowser(input);\n      case 'navigate': return await navigateToPage(input);\n      case 'screenshot': return await takeScreenshot(input);\n      case 'click': return await clickElement(input);\n      case 'type': return await typeText(input);\n      case 'evaluate': return await evaluateScript(input);\n      case 'get_content': return await getPageContent(input);\n      case 'wait_for': return await waitFor(input);\n      case 'close': return await closeBrowser(input);\n      default: throw new Error(`Unknown action: ${input.action}`);\n    }\n  } catch (error: any) {\n    return { success: false, action: input.action, error: error.message };\n  }\n}\n\nasync function launchBrowser(input: Input): Promise<Output> {\n  const browserId = generateId();\n  const browser = input.endpoint \n    ? await connect({ endpoint: input.endpoint })\n    : await launch({ headless: input.headless !== false });\n  browsers.set(browserId, browser);\n  const page = await browser.newPage(input.url || 'about:blank');\n  const pageId = generateId();\n  pages.set(pageId, page);\n  return { success: true, action: 'launch', browser_id: browserId, page_id: pageId, url: input.url || 'about:blank' };\n}\n\nasync function getPage(input: Input): Promise<Page> {\n  if (input.page_id) {\n    const page = pages.get(input.page_id);\n    if (!page) throw new Error(`Page not found: ${input.page_id}`);\n    return page;\n  }\n  const pagesArray = Array.from(pages.values());\n  if (pagesArray.length === 0) throw new Error('No pages available. Use action=launch first.');\n  return pagesArray[pagesArray.length - 1];\n}\n\n// See full implementation in complete example",
@@ -338,15 +460,25 @@
           "Return structured output matching output_schema"
         ]
       },
-      
       "testing_and_validation": {
         "unit_test": {
           "description": "Test each action independently",
-          "test_launch": {"tool": "astral", "input": {"action": "launch", "url": "https://example.com"}},
-          "test_screenshot": {"tool": "astral", "input": {"action": "screenshot", "page_id": "from-launch-response"}},
+          "test_launch": {
+            "tool": "astral",
+            "input": {
+              "action": "launch",
+              "url": "https://example.com"
+            }
+          },
+          "test_screenshot": {
+            "tool": "astral",
+            "input": {
+              "action": "screenshot",
+              "page_id": "from-launch-response"
+            }
+          },
           "verify": "Check tool.response.v1 has success: true and expected fields"
         },
-        
         "integration_test": {
           "description": "Test multi-step workflow",
           "use_workflow_tool": true,
@@ -354,7 +486,6 @@
           "validation": "All steps return success, final screenshot exists"
         }
       },
-      
       "common_mistakes": [
         {
           "mistake": "Not storing browser_id/page_id from launch response",
@@ -387,26 +518,25 @@
           "solution": "Set timeout_ms: 120000 in limits, use generous timeouts"
         }
       ],
-      
       "advanced_features": {
         "remote_browsers": {
           "description": "Connect to browserless.io or other remote browser services",
-          "pattern": {"action": "launch", "endpoint": "wss://remote-endpoint.com"},
+          "pattern": {
+            "action": "launch",
+            "endpoint": "wss://remote-endpoint.com"
+          },
           "use_case": "Cloud automation, serverless environments"
         },
-        
         "authentication": {
           "description": "HTTP basic auth for protected pages",
           "method": "await page.authenticate({ username, password })",
           "note": "Implement as separate action or in navigate action"
         },
-        
         "multiple_pages": {
           "description": "Work with multiple tabs/pages",
           "pattern": "Store multiple page_ids, pass correct ID to each action",
           "use_case": "Compare pages, parallel scraping"
         },
-        
         "continuous_monitoring": {
           "description": "Long-running browser automation",
           "bootstrap_mode": "continuous",
@@ -414,7 +544,6 @@
           "use_case": "Website monitoring, price tracking, content change detection"
         }
       },
-      
       "quick_reference": {
         "import_statement": "import { launch, connect, Browser, Page } from 'jsr:@astral/astral';",
         "state_management": "const browsers = new Map(); const pages = new Map();",
@@ -428,7 +557,6 @@
         "wait": "await page.waitForSelector(selector);",
         "close": "await browser.close();"
       },
-      
       "quick_reference_checklist": [
         "☐ Import from jsr:@astral/astral",
         "☐ Implement action handlers (launch, navigate, screenshot, click, type, evaluate, etc.)",
@@ -449,4 +577,3 @@
     "mode": "replace"
   }
 }
-

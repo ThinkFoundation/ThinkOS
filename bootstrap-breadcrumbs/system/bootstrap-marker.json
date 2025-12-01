@@ -2,6 +2,7 @@
   "schema_name": "system.bootstrap.v1",
   "title": "RCRT Bootstrap Status",
   "tags": [
+    "category:system",
     "system:bootstrap",
     "workspace:system"
   ],

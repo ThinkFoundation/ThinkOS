@@ -4,6 +4,7 @@
   "description": "Approve a breadcrumb - adds 'approved' and 'validated' tags, removes 'draft' and 'pending' tags atomically",
   "semantic_version": "1.0.0",
   "tags": [
+    "category:tool",
     "tool",
     "workspace:tools",
     "tool:breadcrumb-approve",
@@ -15,7 +16,12 @@
     "approval"
   ],
   "llm_hints": {
-    "exclude": ["code", "permissions", "limits", "ui_schema"]
+    "exclude": [
+      "code",
+      "permissions",
+      "limits",
+      "ui_schema"
+    ]
   },
   "context": {
     "name": "breadcrumb-approve",
@@ -26,7 +32,9 @@
     },
     "input_schema": {
       "type": "object",
-      "required": ["breadcrumb_id"],
+      "required": [
+        "breadcrumb_id"
+      ],
       "properties": {
         "breadcrumb_id": {
           "type": "string",
@@ -40,7 +48,11 @@
     },
     "output_schema": {
       "type": "object",
-      "required": ["success", "id", "action"],
+      "required": [
+        "success",
+        "id",
+        "action"
+      ],
       "properties": {
         "success": {
           "type": "boolean",

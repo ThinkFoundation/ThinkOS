@@ -2,6 +2,7 @@
   "schema_name": "agent.def.v1",
   "title": "Validation Specialist Agent",
   "tags": [
+    "category:system",
     "agent:def",
     "workspace:agents",
     "specialist:validation",

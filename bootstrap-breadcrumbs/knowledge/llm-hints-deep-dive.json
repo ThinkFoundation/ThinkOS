@@ -4,6 +4,7 @@
   "description": "How llm_hints transform breadcrumbs for LLM consumption - can reduce tokens by 60-90%",
   "semantic_version": "2.1.0",
   "tags": [
+    "category:knowledge",
     "workspace:knowledge",
     "llm-integration",
     "optimization",

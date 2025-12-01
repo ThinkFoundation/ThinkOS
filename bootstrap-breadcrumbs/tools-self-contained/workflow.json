@@ -2,6 +2,7 @@
   "schema_name": "tool.code.v1",
   "title": "Workflow Orchestrator (Self-Contained)",
   "tags": [
+    "category:tool",
     "tool",
     "workspace:tools",
     "tool:workflow",

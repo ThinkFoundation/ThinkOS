@@ -2,6 +2,7 @@
   "schema_name": "tool.security.policy.v1",
   "title": "Tool Security Policy",
   "tags": [
+    "category:system",
     "tool:security",
     "system:bootstrap",
     "system:internal"
@@ -9,7 +10,6 @@
   "context": {
     "last_updated": "2025-11-10T00:00:00Z",
     "version": "1.0.0",
-    
     "trusted_tools": [
       {
         "tool_name": "astral",
@@ -96,7 +96,6 @@
         "note": "Limited permissions - only hrtime for accurate scheduling"
       }
     ],
-    
     "default_restrictions": {
       "description": "Default security restrictions for all user-created tools",
       "max_net_domains": 5,
@@ -116,7 +115,6 @@
         "hrtime"
       ]
     },
-    
     "audit_log": [
       {
         "date": "2025-11-10",
@@ -146,7 +144,6 @@
         "approved_by": "system-admin"
       }
     ],
-    
     "notes": [
       "Trusted tools are explicitly allowed elevated permissions based on their requirements",
       "All other tools are sandboxed (network-only with domain restrictions)",
@@ -156,7 +153,6 @@
       "FFI is NEVER allowed for any tool (too dangerous)",
       "Private network access is blocked for all tools"
     ],
-    
     "policy_principles": [
       "Principle of least privilege - grant minimum permissions needed",
       "Explicit over implicit - all trusted tools must be listed",
@@ -168,4 +164,3 @@
   "description": "Security policy defining which tools can have elevated Deno permissions beyond the default sandbox",
   "semantic_version": "1.0.0"
 }
-

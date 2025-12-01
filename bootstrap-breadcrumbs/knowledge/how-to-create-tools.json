@@ -2,6 +2,7 @@
   "schema_name": "knowledge.v1",
   "title": "Complete Guide: Creating Self-Contained Tools in RCRT",
   "tags": [
+    "category:knowledge",
     "workspace:knowledge",
     "tool-creation",
     "documentation",
@@ -15,7 +16,6 @@
     "last_updated": "2025-11-02",
     "content": {
       "summary": "Comprehensive guide for creating tool.code.v1 self-contained tools in the RCRT system, including structure, schemas, permissions, secrets management, and upload process.",
-      
       "universal_standard_reference": {
         "notice": "🔴 CRITICAL: ALL tools must conform to the Universal Tool Invocation Standard",
         "see_also": "tool-invocation-standard.json for complete standard documentation",
@@ -27,7 +27,6 @@
           "Success responses: Must return {status: 'success', output: {matching output_schema}}"
         ]
       },
-      
       "quick_start": {
         "overview": "Self-contained tools are Deno-based, sandboxed tools defined as tool.code.v1 breadcrumbs. They execute in an isolated environment with explicitly declared permissions.",
         "process": [
@@ -52,7 +51,12 @@
             "math"
           ],
           "llm_hints": {
-            "exclude": ["code", "permissions", "limits", "ui_schema"]
+            "exclude": [
+              "code",
+              "permissions",
+              "limits",
+              "ui_schema"
+            ]
           },
           "context": {
             "name": "toolname",
@@ -205,15 +209,27 @@
         "declaration_method": "Add requires:* tags to tool definition",
         "examples": {
           "browser_automation": {
-            "tags": ["tool", "tool:astral", "requires:chrome-browser", "runtime:browser-automation"],
+            "tags": [
+              "tool",
+              "tool:astral",
+              "requires:chrome-browser",
+              "runtime:browser-automation"
+            ],
             "explanation": "Astral/Puppeteer/Playwright need Chrome binary and system libraries"
           },
           "image_processing": {
-            "tags": ["tool", "tool:resize-image", "requires:imagemagick"],
+            "tags": [
+              "tool",
+              "tool:resize-image",
+              "requires:imagemagick"
+            ],
             "explanation": "Image processing tools need ImageMagick system package"
           },
           "no_system_deps": {
-            "tags": ["tool", "tool:calculator"],
+            "tags": [
+              "tool",
+              "tool:calculator"
+            ],
             "explanation": "Pure Deno tools don't need requires:* tags"
           }
         },
@@ -387,7 +403,12 @@
             "testing"
           ],
           "llm_hints": {
-            "exclude": ["code", "permissions", "limits", "ui_schema"]
+            "exclude": [
+              "code",
+              "permissions",
+              "limits",
+              "ui_schema"
+            ]
           },
           "context": {
             "name": "echo",
@@ -465,7 +486,12 @@
                 "math"
               ],
               "llm_hints": {
-                "exclude": ["code", "permissions", "limits", "ui_schema"]
+                "exclude": [
+                  "code",
+                  "permissions",
+                  "limits",
+                  "ui_schema"
+                ]
               },
               "context": {
                 "name": "yourname",

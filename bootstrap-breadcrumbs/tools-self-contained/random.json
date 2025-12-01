@@ -4,6 +4,7 @@
   "description": "Generate random numbers",
   "semantic_version": "2.0.0",
   "tags": [
+    "category:tool",
     "tool",
     "workspace:tools",
     "tool:random",

@@ -4,6 +4,7 @@
   "description": "How sessions work via agent.context.v1 breadcrumbs with timestamp-based IDs and consumer tags",
   "semantic_version": "1.0.0",
   "tags": [
+    "category:knowledge",
     "workspace:knowledge",
     "sessions",
     "conversations",

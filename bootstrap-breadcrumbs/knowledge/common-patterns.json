@@ -4,6 +4,7 @@
   "description": "Proven patterns for chat, note processing, tool calls, multi-agent coordination",
   "semantic_version": "1.0.0",
   "tags": [
+    "category:knowledge",
     "workspace:knowledge",
     "patterns",
     "documentation",

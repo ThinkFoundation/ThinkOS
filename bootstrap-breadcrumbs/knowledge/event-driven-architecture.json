@@ -4,6 +4,7 @@
   "description": "How SSE, NATS, and breadcrumb events enable real-time coordination without direct service calls",
   "semantic_version": "1.0.0",
   "tags": [
+    "category:knowledge",
     "workspace:knowledge",
     "events",
     "architecture",

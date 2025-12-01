@@ -19,10 +19,9 @@ fn internal_error<E: std::fmt::Display>(e: E) -> Box<dyn std::error::Error> {
 pub async fn cleanup_health_checks(db: &rcrt_core::db::Db) -> Result<u64, sqlx::Error> {
     info!("Running direct health check cleanup...");
     
-    // Clean up health check breadcrumbs older than 5 minutes
+    // Clean up health check breadcrumbs older than 5 minutes (tag-based)
     let query = "DELETE FROM breadcrumbs 
-                 WHERE schema_name = 'tool.request.v1' 
-                 AND tags @> ARRAY['health:check'] 
+                 WHERE tags @> ARRAY['health:check'] 
                  AND created_at < NOW() - INTERVAL '5 minutes'";
     
     let result = sqlx::query(query)
@@ -38,41 +37,41 @@ pub async fn cleanup_health_checks(db: &rcrt_core::db::Db) -> Result<u64, sqlx::
     Ok(deleted)
 }
 
-/// Simple cleanup for all expired breadcrumbs
+/// Simple cleanup for all expired breadcrumbs (tag-based, generic)
 pub async fn cleanup_expired_breadcrumbs(db: &rcrt_core::db::Db) -> Result<u64, sqlx::Error> {
     info!("Running direct expired breadcrumb cleanup...");
     
     let mut total_deleted = 0u64;
     
-    // 1. Explicit TTL breadcrumbs
+    // 1. Explicit TTL breadcrumbs (most common case)
     let ttl_query = "DELETE FROM breadcrumbs WHERE ttl IS NOT NULL AND ttl < NOW()";
     let ttl_result = sqlx::query(ttl_query).execute(&db.pool).await?;
     total_deleted += ttl_result.rows_affected();
     
-    // 2. Health checks (5 minutes)
+    // 2. Tag-based cleanup (no hardcoded schemas!)
+    // Health checks (via tag)
     let health_query = "DELETE FROM breadcrumbs 
-                       WHERE schema_name = 'tool.request.v1' 
-                       AND tags @> ARRAY['health:check']
+                       WHERE tags @> ARRAY['health:check']
                        AND created_at < NOW() - INTERVAL '5 minutes'
                        AND ttl IS NULL";
     let health_result = sqlx::query(health_query).execute(&db.pool).await?;
     total_deleted += health_result.rows_affected();
     
-    // 3. System pings (10 minutes)
+    // System pings (via tag)
     let ping_query = "DELETE FROM breadcrumbs 
-                     WHERE schema_name = 'system.ping.v1' 
+                     WHERE tags @> ARRAY['system:ping']
                      AND created_at < NOW() - INTERVAL '10 minutes'
                      AND ttl IS NULL";
     let ping_result = sqlx::query(ping_query).execute(&db.pool).await?;
     total_deleted += ping_result.rows_affected();
     
-    // 4. Agent thinking breadcrumbs (6 hours)
-    let thinking_query = "DELETE FROM breadcrumbs 
-                         WHERE schema_name IN ('agent.thinking.v1', 'agent.analysis.v1') 
-                         AND created_at < NOW() - INTERVAL '6 hours'
-                         AND ttl IS NULL";
-    let thinking_result = sqlx::query(thinking_query).execute(&db.pool).await?;
-    total_deleted += thinking_result.rows_affected();
+    // Temporary data (via tag)
+    let temp_query = "DELETE FROM breadcrumbs 
+                     WHERE tags && ARRAY['temp:data', 'temp:state']
+                     AND created_at < NOW() - INTERVAL '1 hour'
+                     AND ttl IS NULL";
+    let temp_result = sqlx::query(temp_query).execute(&db.pool).await?;
+    total_deleted += temp_result.rows_affected();
     
     if total_deleted > 0 {
         info!("Cleaned up {} total expired breadcrumbs", total_deleted);
@@ -259,78 +258,26 @@ impl HygieneRunner {
         
         let explicit_ttl_deleted = result.rows_affected();
         
-        // 2. Clean up usage-based TTL breadcrumbs
-        let usage_deleted = self.cleanup_usage_ttl().await?;
+        // 2. Apply tag-based TTL policies for breadcrumbs without explicit TTL
+        let policy_deleted = self.apply_tag_ttl_policies().await?;
         
-        // 3. Clean up hybrid TTL breadcrumbs
-        let hybrid_deleted = self.cleanup_hybrid_ttl().await?;
-        
-        // 4. Apply schema-specific TTL policies for breadcrumbs without explicit TTL
-        let policy_deleted = self.apply_implicit_ttl_policies().await?;
-        
-        let total = explicit_ttl_deleted + usage_deleted + hybrid_deleted + policy_deleted;
+        let total = explicit_ttl_deleted + policy_deleted;
         
         if total > 0 {
-            info!("Purged {} expired breadcrumbs (datetime: {}, usage: {}, hybrid: {}, policy: {})", 
-                total, explicit_ttl_deleted, usage_deleted, hybrid_deleted, policy_deleted);
+            info!("Purged {} expired breadcrumbs (datetime: {}, tag-policy: {})", 
+                total, explicit_ttl_deleted, policy_deleted);
         }
         
         Ok(total)
     }
     
-    /// Cleanup usage-based TTL breadcrumbs (exceeded max_reads)
-    async fn cleanup_usage_ttl(&self) -> Result<u64, Box<dyn std::error::Error>> {
-        let query = "
-            DELETE FROM breadcrumbs 
-            WHERE ttl_type = 'usage' 
-            AND read_count >= COALESCE(CAST(ttl_config->>'max_reads' AS INTEGER), 1)
-        ";
-        
-        let result = sqlx::query(query)
-            .execute(&self.state.db.pool)
-            .await?;
-        
-        let deleted = result.rows_affected();
-        if deleted > 0 {
-            info!("Cleaned up {} usage-based TTL breadcrumbs", deleted);
-        }
-        
-        Ok(deleted)
-    }
-    
-    /// Cleanup hybrid TTL breadcrumbs (any condition met)
-    async fn cleanup_hybrid_ttl(&self) -> Result<u64, Box<dyn std::error::Error>> {
-        // Hybrid "any" mode: delete if datetime expired OR usage exceeded
-        let query = "
-            DELETE FROM breadcrumbs 
-            WHERE ttl_type = 'hybrid'
-            AND COALESCE(CAST(ttl_config->>'hybrid_mode' AS TEXT), 'any') = 'any'
-            AND (
-                (ttl IS NOT NULL AND ttl < NOW())  -- datetime expired
-                OR (read_count >= COALESCE(CAST(ttl_config->>'max_reads' AS INTEGER), 999999))  -- usage exceeded
-            )
-        ";
-        
-        let result = sqlx::query(query)
-            .execute(&self.state.db.pool)
-            .await?;
-        
-        let deleted = result.rows_affected();
-        if deleted > 0 {
-            info!("Cleaned up {} hybrid TTL breadcrumbs", deleted);
-        }
-        
-        Ok(deleted)
-    }
-    
-    async fn apply_implicit_ttl_policies(&self) -> Result<u64, Box<dyn std::error::Error>> {
+    async fn apply_tag_ttl_policies(&self) -> Result<u64, Box<dyn std::error::Error>> {
         let mut total_deleted = 0u64;
         
-        // Health check breadcrumbs - expire after configured minutes
+        // Health check breadcrumbs (tag-based, no schema matching)
         let healthcheck_query = format!(
             "DELETE FROM breadcrumbs 
-             WHERE schema_name = 'tool.request.v1' 
-             AND tags @> ARRAY['health:check']
+             WHERE tags @> ARRAY['health:check']
              AND created_at < NOW() - INTERVAL '{} minutes'
              AND ttl IS NULL",
             self.config.healthcheck_ttl_minutes
@@ -342,46 +289,43 @@ impl HygieneRunner {
         
         total_deleted += result.rows_affected();
         
-        // Temporary agent memory - expire after configured hours
-        let temp_memory_query = format!(
+        // Temporary data (tag-based)
+        let temp_data_query = format!(
             "DELETE FROM breadcrumbs 
-             WHERE schema_name IN ('agent.memory.v1', 'agent.temp_state.v1') 
+             WHERE tags && ARRAY['temp:data', 'temp:state', 'temp:memory']
              AND created_at < NOW() - INTERVAL '{} hours'
              AND ttl IS NULL",
             self.config.temp_data_ttl_hours
         );
         
-        let result = sqlx::query(&temp_memory_query)
+        let result = sqlx::query(&temp_data_query)
             .execute(&self.state.db.pool)
             .await?;
         
         total_deleted += result.rows_affected();
         
-        // Tool execution logs - expire after configured days
-        let tool_logs_query = format!(
+        // Execution logs (tag-based)
+        let logs_query = format!(
             "DELETE FROM breadcrumbs 
-             WHERE schema_name IN ('tool.response.v1', 'tool.error.v1') 
-             AND tags @> ARRAY['log:execution']
+             WHERE tags && ARRAY['log:execution', 'log:tool', 'log:error']
              AND created_at < NOW() - INTERVAL '{} days'
              AND ttl IS NULL",
             self.config.log_retention_days
         );
         
-        let result = sqlx::query(&tool_logs_query)
+        let result = sqlx::query(&logs_query)
             .execute(&self.state.db.pool)
             .await?;
         
         total_deleted += result.rows_affected();
         
-        // Performance metrics - keep only recent ones
-        let metrics_query = format!(
-            "DELETE FROM breadcrumbs 
-             WHERE schema_name IN ('agent.metrics.v1', 'tool.performance.v1') 
-             AND created_at < NOW() - INTERVAL '7 days'
-             AND ttl IS NULL"
-        );
+        // Performance metrics (tag-based)
+        let metrics_query = "DELETE FROM breadcrumbs 
+                            WHERE tags && ARRAY['metric:performance', 'metric:agent', 'metric:tool']
+                            AND created_at < NOW() - INTERVAL '7 days'
+                            AND ttl IS NULL";
         
-        let result = sqlx::query(&metrics_query)
+        let result = sqlx::query(metrics_query)
             .execute(&self.state.db.pool)
             .await?;
         
@@ -608,19 +552,53 @@ impl HygieneRunner {
                 visibility: None,
                 sensitivity: None,
                 ttl: Some(chrono::Utc::now() + chrono::Duration::hours(1)),
-                ttl_type: Some("datetime".to_string()),
-                ttl_config: None,
-                ttl_source: Some("auto-applied".to_string()),
-                entity_keywords: None,  // System stats don't need semantic search
+                entity_keywords: None,
             },
-            None // No embedding needed for stats
+            None
         ).await?;
         
         Ok(())
     }
 }
 
-/// Enhanced TTL middleware for breadcrumb creation
+/// Parse TTL duration from tag (e.g., "ttl:5min", "ttl:1hour", "ttl:7days")
+fn parse_ttl_from_tags(tags: &[String]) -> Option<chrono::DateTime<chrono::Utc>> {
+    for tag in tags {
+        if let Some(duration_str) = tag.strip_prefix("ttl:") {
+            if let Some(duration) = parse_duration(duration_str) {
+                return Some(chrono::Utc::now() + duration);
+            }
+        }
+    }
+    None
+}
+
+/// Parse duration string like "5min", "1hour", "7days"
+fn parse_duration(s: &str) -> Option<chrono::Duration> {
+    // Extract number and unit
+    let (num_str, unit) = if s.ends_with("min") {
+        (s.trim_end_matches("min"), "min")
+    } else if s.ends_with("hour") || s.ends_with("hours") {
+        let s = s.trim_end_matches("hours").trim_end_matches("hour");
+        (s, "hour")
+    } else if s.ends_with("day") || s.ends_with("days") {
+        let s = s.trim_end_matches("days").trim_end_matches("day");
+        (s, "day")
+    } else {
+        return None;
+    };
+    
+    let num: i64 = num_str.parse().ok()?;
+    
+    match unit {
+        "min" => Some(chrono::Duration::minutes(num)),
+        "hour" => Some(chrono::Duration::hours(num)),
+        "day" => Some(chrono::Duration::days(num)),
+        _ => None
+    }
+}
+
+/// Enhanced TTL middleware for breadcrumb creation (tag-based, generic)
 pub fn apply_auto_ttl(
     create_req: &mut rcrt_core::models::BreadcrumbCreate,
     schema_name: Option<&str>,
@@ -631,43 +609,32 @@ pub fn apply_auto_ttl(
         return;
     }
     
-    // Apply automatic TTL based on schema and tags
-    let auto_ttl = match schema_name {
-        // Health checks expire very quickly
-        Some("tool.request.v1") if tags.iter().any(|t| t.contains("health:check")) => {
+    // Try tag-based TTL first (e.g., "ttl:5min", "ttl:1hour")
+    if let Some(ttl) = parse_ttl_from_tags(tags) {
+        create_req.ttl = Some(ttl);
+        return;
+    }
+    
+    // Fallback: Common patterns via tags (not schemas!)
+    // This enables gradual migration - eventually all will use ttl:* tags
+    let auto_ttl = match () {
+        _ if tags.iter().any(|t| t.contains("health:check")) => {
             Some(chrono::Utc::now() + chrono::Duration::minutes(5))
         },
-        
-        // System pings expire quickly
-        Some("system.ping.v1") => {
+        _ if tags.iter().any(|t| t == "system:ping") => {
             Some(chrono::Utc::now() + chrono::Duration::minutes(10))
         },
-        
-        // Temporary agent state
-        Some(schema) if schema.contains("agent.temp") => {
+        _ if tags.iter().any(|t| t.starts_with("temp:")) => {
             Some(chrono::Utc::now() + chrono::Duration::hours(1))
         },
-        
-        // Agent thinking/analysis - medium term
-        Some("agent.thinking.v1") | Some("agent.analysis.v1") => {
-            Some(chrono::Utc::now() + chrono::Duration::hours(6))
-        },
-        
-        // Tool execution logs - keep for debugging but not forever
-        Some("tool.response.v1") | Some("tool.error.v1") if tags.iter().any(|t| t.contains("log:")) => {
+        _ if tags.iter().any(|t| t.contains("log:")) => {
             Some(chrono::Utc::now() + chrono::Duration::days(7))
         },
-        
-        // Performance metrics - keep for trends but expire eventually
-        Some(schema) if schema.contains("metrics.v1") => {
-            Some(chrono::Utc::now() + chrono::Duration::days(30))
-        },
-        
         _ => None
     };
     
-    if auto_ttl.is_some() {
-        create_req.ttl = auto_ttl;
+    if let Some(ttl) = auto_ttl {
+        create_req.ttl = Some(ttl);
     }
 }
 

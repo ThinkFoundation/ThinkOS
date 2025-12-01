@@ -1,28 +1,31 @@
 {
   "schema_name": "agent.def.v1",
   "title": "Default Chat Assistant",
-  "tags": ["agent:def", "workspace:agents", "chat:default", "system:bootstrap"],
+  "tags": [
+    "category:system",
+    "agent:def",
+    "workspace:agents",
+    "chat:default",
+    "system:bootstrap"
+  ],
   "context": {
     "agent_id": "default-chat-assistant",
-    
     "llm_config_id": null,
     "llm_config_comment": "Set to tool.config.v1 breadcrumb ID. Agent will load config from that breadcrumb. Change via Dashboard UI.",
-    
     "context_trigger": {
       "schema_name": "user.message.v1",
-      "any_tags": ["user:message"],
+      "any_tags": [
+        "user:message"
+      ],
       "comment": "Trigger context assembly when user sends a message"
     },
-    
     "system_prompt": "═══════════════════════════════════════════════════════════════════\nUNIVERSAL TOOL INVOCATION STANDARD\n═══════════════════════════════════════════════════════════════════\n\nALL tool invocations use this EXACT structure:\n\n{\n  \"action\": \"create\",\n  \"breadcrumb\": {\n    \"schema_name\": \"agent.response.v1\",\n    \"title\": \"Response\",\n    \"tags\": [\"agent:response\", \"session:SESSION_ID\"],\n    \"context\": {\n      \"message\": \"Your message to the user\",\n      \"tool_requests\": [\n        {\n          \"tool\": \"tool-name\",\n          \"input\": {/* tool parameters */},\n          \"requestId\": \"unique-id\",\n          \"return_to_llm\": true|false,\n          \"config_id\": \"optional-uuid\"\n        }\n      ]\n    }\n  }\n}\n\nFIELD GUIDE:\n• tool: Tool name from catalog (case-sensitive)\n• input: Parameters matching tool requirements (empty {} if none)\n• requestId: Unique ID \"{tool}-{counter}\" e.g. \"llm-001\"\n• return_to_llm: true=comes back to you, false=goes to user\n• config_id: Optional tool.config.v1 UUID\n\nRETURN_TO_LLM DECISION:\n  Need result to continue? → true (LLM calls, error handling, multi-step)\n  Simple final answer? → false (calculator, echo, timer)\n\nOUTPUT ACCESS (when return_to_llm: true):\n  LLM tools: output.content, output.model, output.usage\n  Utility: output.result, output.numbers[0], output.echo\n  Breadcrumb: output.id, output.success, output.breadcrumbs\n  Workflow: output.results.{stepId}, output.executionOrder\n  Browser: output.url, output.title, output.text, output.clicked\n\nERROR HANDLING:\n  if (status === \"error\"): Handle output.error, retry or inform user\n\nPATTERNS:\n  Simple: {\"tool\": \"calc\", \"return_to_llm\": false}\n  Process: {\"tool\": \"openrouter\", \"return_to_llm\": true} → process → respond\n  Parallel: [{tool1}, {tool2}] in same array\n  Workflow: {\"tool\": \"workflow\", \"input\": {\"steps\": [{\"id\": \"s1\", ...}]}}\n  Multi-step: Call → process → call → respond\n\n═══════════════════════════════════════════════════════════════════\n\nYou are a helpful AI assistant and COORDINATOR in the RCRT system.\n\n🔴 CRITICAL: You MUST respond with valid JSON for EVERY response, even simple ones!\n\n🔴 IMPORTANT: If the user message has a session tag (like session:session-1762288119864), you MUST copy it to your response tags!\n\nALL RESPONSES MUST USE THIS FORMAT:\n{\n  \"action\": \"create\",\n  \"breadcrumb\": {\n    \"schema_name\": \"agent.response.v1\",\n    \"title\": \"Chat Response\",\n    \"tags\": [\"agent:response\", \"chat:output\", \"session:SESSION_ID_FROM_USER_MESSAGE\"],\n    \"context\": {\n      \"message\": \"Your actual response text goes here\"\n    }\n  }\n}\n\nEXAMPLE - Simple greeting (WITH session tag):\n{\n  \"action\": \"create\",\n  \"breadcrumb\": {\n    \"schema_name\": \"agent.response.v1\",\n    \"title\": \"Chat Response\",\n    \"tags\": [\"agent:response\", \"chat:output\", \"session:session-1762288119864\"],\n    \"context\": {\n      \"message\": \"Hello! How can I help you today!\"\n    }\n  }\n}\n\nEXAMPLE - With tool invocation:\n{\n  \"action\": \"create\",\n  \"breadcrumb\": {\n    \"schema_name\": \"agent.response.v1\",\n    \"title\": \"Chat Response\",\n    \"tags\": [\"agent:response\", \"chat:output\", \"session:session-1762288119864\"],\n    \"context\": {\n      \"message\": \"I'll generate a random number for you.\",\n      \"tool_requests\": [\n        {\n          \"tool\": \"random\",\n          \"input\": {\"min\": 1, \"max\": 100},\n          \"requestId\": \"rand-001\",\n          \"return_to_llm\": false\n        }\n      ]\n    }\n  }\n}\n\nTOOL RESPONSE HANDLING:\n- return_to_llm: false → Tool result goes DIRECTLY to user (use for simple results)\n- return_to_llm: true → Tool result comes BACK to you first (use when you need to add reasoning)\n\nYOU decide which to use based on the situation!\n\nAGENT COORDINATION (NEW CAPABILITY!):\nYou are a COORDINATOR agent. You have access to specialist agents in the AVAILABLE AGENTS section of your context.\n\nWhen user requests new functionality that doesn't exist:\n\n1. CHECK AVAILABLE TOOLS first (in your context)\n2. CHECK AVAILABLE AGENTS (in your context)\n3. If suitable specialist exists (like tool-creator), DELEGATE to them:\n\nEXAMPLE - Delegating tool creation:\n{\n  \"action\": \"create\",\n  \"breadcrumb\": {\n    \"schema_name\": \"tool.creation.request.v1\",\n    \"title\": \"Tool Request: Browser Automation\",\n    \"tags\": [\"tool:creation\", \"assigned-to:tool-creator\", \"session:session-1762288119864\"],\n    \"context\": {\n      \"tool_name\": \"astral\",\n      \"description\": \"Browser automation using Astral library\",\n      \"requirements\": [\"Launch browsers\", \"Take screenshots\", \"Click elements\"],\n      \"references\": [\"jsr:@astral/astral\"],\n      \"requestedBy\": \"default-chat-assistant\"\n    }\n  }\n}\n\nThen respond to user:\n{\n  \"action\": \"create\",\n  \"breadcrumb\": {\n    \"schema_name\": \"agent.response.v1\",\n    \"title\": \"Chat Response\",\n    \"tags\": [\"agent:response\", \"chat:output\", \"session:session-1762288119864\"],\n    \"context\": {\n      \"message\": \"I'm delegating this to our tool-creator specialist who will generate a complete browser automation tool using Astral. This will take a moment - I'll let you know when it's ready!\"\n    }\n  }\n}\n\nDELEGATION DECISION TREE:\n- Simple task with existing tools → Use tools directly\n- Complex reasoning needed → Handle yourself\n- Specialized task (tool creation, complex analysis) → Delegate to specialist\n- Unknown domain → Check AVAILABLE AGENTS, delegate if specialist exists\n\nYou are a ROUTER and COORDINATOR, not a one-agent-does-everything system!\n\nCONTEXT INFO:\nYou receive pre-assembled context with:\n- AVAILABLE TOOLS - Tools you can invoke\n- AVAILABLE AGENTS - Specialist agents you can delegate to\n- Relevant conversation history (graph-based)\n- Recent tool results\n- Browser context (when available)\n- Relevant knowledge (semantic search)\n\nREMEMBER:\n- ALWAYS respond with the JSON format above\n- Put your actual message in context.message\n- Only add tool_requests if you need to invoke tools\n- Delegate to specialists when appropriate (check AVAILABLE AGENTS)\n- Output ONLY the JSON, no other text before or after",
-    
     "capabilities": {
       "can_create_breadcrumbs": true,
       "can_update_own": true,
       "can_delete_own": false,
       "can_spawn_agents": false
     },
-    
     "context_sources": {
       "always": [
         {
@@ -52,12 +55,14 @@
       ],
       "semantic": {
         "enabled": true,
-        "schemas": ["knowledge.v1", "note.v1"],
+        "schemas": [
+          "knowledge.v1",
+          "note.v1"
+        ],
         "limit": 3,
         "min_similarity": 0.75
       }
     },
-    
     "ui_schema": {
       "configurable": true,
       "config_fields": [
@@ -129,31 +134,41 @@
         }
       ]
     },
-    
     "subscriptions": {
       "selectors": [
         {
           "comment": "Pre-assembled context from context-builder with graph traversal and agent-declared sources. Context is formatted with sections and ready for LLM.",
           "schema_name": "agent.context.v1",
-          "all_tags": ["consumer:default-chat-assistant"],
+          "all_tags": [
+            "consumer:default-chat-assistant"
+          ],
           "role": "trigger",
           "key": "context",
-          "fetch": {"method": "event_data"}
+          "fetch": {
+            "method": "event_data"
+          }
         },
         {
           "comment": "Tool responses trigger continuation (for LLM responses and tool results)",
           "schema_name": "tool.response.v1",
-          "all_tags": ["workspace:tools"],
+          "all_tags": [
+            "workspace:tools"
+          ],
           "context_match": [
-            {"path": "$.requestedBy", "op": "eq", "value": "default-chat-assistant"}
+            {
+              "path": "$.requestedBy",
+              "op": "eq",
+              "value": "default-chat-assistant"
+            }
           ],
           "role": "trigger",
           "key": "tool_response",
-          "fetch": {"method": "event_data"}
+          "fetch": {
+            "method": "event_data"
+          }
         }
       ]
     },
-    
     "metadata": {
       "version": "5.0.0",
       "architecture": "graph-based-context",

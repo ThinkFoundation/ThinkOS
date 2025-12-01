@@ -22,9 +22,6 @@ pub struct BreadcrumbCreate {
     pub visibility: Option<Visibility>,
     pub sensitivity: Option<Sensitivity>,
     pub ttl: Option<DateTime<Utc>>,
-    pub ttl_type: Option<String>,        // 'never', 'datetime', 'duration', 'usage', 'hybrid'
-    pub ttl_config: Option<JsonValue>,   // Duration spec, max_reads, etc
-    pub ttl_source: Option<String>,      // 'manual', 'schema-default', 'auto-applied', 'explicit'
     pub entity_keywords: Option<Vec<String>>,  // Hybrid pointers: tag pointers + extracted keywords
 }
 
@@ -40,9 +37,6 @@ pub struct BreadcrumbUpdate {
     pub visibility: Option<Visibility>,
     pub sensitivity: Option<Sensitivity>,
     pub ttl: Option<DateTime<Utc>>,
-    pub ttl_type: Option<String>,
-    pub ttl_config: Option<JsonValue>,
-    pub ttl_source: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -61,30 +55,12 @@ pub struct Breadcrumb {
     pub version: i32,
     pub checksum: String,
     pub ttl: Option<DateTime<Utc>>,
-    pub ttl_type: Option<String>,
-    pub ttl_config: Option<JsonValue>,
-    pub read_count: Option<i32>,
-    pub ttl_source: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub created_by: Option<Uuid>,
     pub updated_by: Option<Uuid>,
     pub size_bytes: i32,
     pub entity_keywords: Option<Vec<String>>,  // Hybrid pointers: tag pointers + extracted keywords
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct BreadcrumbContextView {
-    pub id: Uuid,
-    pub title: String,
-    pub description: Option<String>,        // NEW: Include in context view
-    pub semantic_version: Option<String>,   // NEW: Include in context view
-    pub context: JsonValue,
-    pub tags: Vec<String>,
-    pub schema_name: Option<String>,
-    pub llm_hints: Option<JsonValue>,       // NEW: Include in context view
-    pub version: i32,
-    pub updated_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -103,10 +79,6 @@ pub struct BreadcrumbFull {
     pub version: i32,
     pub checksum: String,
     pub ttl: Option<DateTime<Utc>>,
-    pub ttl_type: Option<String>,
-    pub ttl_config: Option<JsonValue>,
-    pub read_count: Option<i32>,
-    pub ttl_source: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub created_by: Option<Uuid>,
@@ -117,11 +89,25 @@ pub struct BreadcrumbFull {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Selector {
-    pub any_tags: Option<Vec<String>>,   // match if overlap
-    pub all_tags: Option<Vec<String>>,   // match if all contained
+pub struct BreadcrumbContextView {
+    pub id: Uuid,
+    pub title: String,
+    pub description: Option<String>,
+    pub semantic_version: Option<String>,
+    pub context: JsonValue,
+    pub tags: Vec<String>,
     pub schema_name: Option<String>,
-    pub context_match: Option<Vec<ContextMatch>>, // simple ops on JSON paths
+    pub llm_hints: Option<JsonValue>,
+    pub version: i32,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Selector {
+    pub tags: Option<Vec<String>>,
+    pub schema_name: Option<String>,
+    pub all_tags: Option<Vec<String>>,
+    pub context_match: Option<Vec<ContextMatch>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

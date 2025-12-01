@@ -2,6 +2,7 @@
   "schema_name": "knowledge.v1",
   "title": "Tool Validation Rules - Quick Reference",
   "tags": [
+    "category:knowledge",
     "workspace:knowledge",
     "validation",
     "security",
@@ -32,14 +33,29 @@
         "rule": "Tools using system binaries MUST declare capability tags",
         "patterns": {
           "browser_tools": {
-            "imports_containing": ["astral", "puppeteer", "playwright"],
+            "imports_containing": [
+              "astral",
+              "puppeteer",
+              "playwright"
+            ],
             "must_have_tag": "requires:chrome-browser",
-            "must_have_permissions": {"net": true, "run": true, "read": true, "write": true, "env": true}
+            "must_have_permissions": {
+              "net": true,
+              "run": true,
+              "read": true,
+              "write": true,
+              "env": true
+            }
           },
           "image_tools": {
-            "imports_containing": ["sharp", "imagemagick"],
+            "imports_containing": [
+              "sharp",
+              "imagemagick"
+            ],
             "must_have_tag": "requires:imagemagick",
-            "must_have_permissions": {"run": true}
+            "must_have_permissions": {
+              "run": true
+            }
           }
         },
         "validation_check": "If tool imports system-dependent library, MUST have corresponding requires:* tag"

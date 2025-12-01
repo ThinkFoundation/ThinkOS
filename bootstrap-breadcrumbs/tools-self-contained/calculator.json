@@ -4,6 +4,7 @@
   "description": "Perform mathematical calculations - supports basic arithmetic, parentheses, and common math functions",
   "semantic_version": "2.0.0",
   "tags": [
+    "category:tool",
     "tool",
     "workspace:tools",
     "tool:calculator",

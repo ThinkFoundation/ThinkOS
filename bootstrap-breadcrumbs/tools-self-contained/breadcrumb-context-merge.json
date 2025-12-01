@@ -4,6 +4,7 @@
   "description": "Deep merge context fields into breadcrumb - only updates specified fields, preserves all others",
   "semantic_version": "1.0.0",
   "tags": [
+    "category:tool",
     "tool",
     "workspace:tools",
     "tool:breadcrumb-context-merge",
@@ -15,7 +16,12 @@
     "merge"
   ],
   "llm_hints": {
-    "exclude": ["code", "permissions", "limits", "ui_schema"]
+    "exclude": [
+      "code",
+      "permissions",
+      "limits",
+      "ui_schema"
+    ]
   },
   "context": {
     "name": "breadcrumb-context-merge",
@@ -26,7 +32,10 @@
     },
     "input_schema": {
       "type": "object",
-      "required": ["breadcrumb_id", "context"],
+      "required": [
+        "breadcrumb_id",
+        "context"
+      ],
       "properties": {
         "breadcrumb_id": {
           "type": "string",
@@ -40,7 +49,11 @@
     },
     "output_schema": {
       "type": "object",
-      "required": ["success", "id", "operation"],
+      "required": [
+        "success",
+        "id",
+        "operation"
+      ],
       "properties": {
         "success": {
           "type": "boolean",

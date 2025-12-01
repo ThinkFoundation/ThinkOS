@@ -1,81 +1,152 @@
 {
   "schema_name": "knowledge.v1",
   "title": "System Capabilities and Dependencies Guide",
-  "tags": ["workspace:knowledge", "system:capabilities", "docker", "dependencies", "runtime"],
+  "tags": [
+    "category:knowledge",
+    "workspace:knowledge",
+    "system:capabilities",
+    "docker",
+    "dependencies",
+    "runtime"
+  ],
   "context": {
     "topic": "system-capabilities",
     "audience": "tool-creator, validation-specialist, tool-debugger",
     "last_updated": "2025-11-15",
     "content": {
       "summary": "Maps tool capabilities to system requirements. When tools need system dependencies (Chrome, ImageMagick, etc.), declare them via capability tags.",
-      
       "capability_catalog": {
         "chrome-browser": {
           "description": "Chromium/Chrome browser for automation",
-          "required_by": ["astral", "puppeteer", "playwright"],
+          "required_by": [
+            "astral",
+            "puppeteer",
+            "playwright"
+          ],
           "runtime_hint": "browser-automation",
           "docker_image": "tools-runner:browser",
-          "apt_packages": ["google-chrome-stable", "fonts-liberation", "libnss3", "libatk1.0-0", "libatk-bridge2.0-0", "libcups2", "libxcomposite1", "libxdamage1", "libxrandr2", "libgbm1", "libpango-1.0-0", "libasound2"],
+          "apt_packages": [
+            "google-chrome-stable",
+            "fonts-liberation",
+            "libnss3",
+            "libatk1.0-0",
+            "libatk-bridge2.0-0",
+            "libcups2",
+            "libxcomposite1",
+            "libxdamage1",
+            "libxrandr2",
+            "libgbm1",
+            "libpango-1.0-0",
+            "libasound2"
+          ],
           "verification": "google-chrome --version",
           "install_guide": "See tools-runner:browser Dockerfile"
         },
         "imagemagick": {
           "description": "Image processing and manipulation",
-          "required_by": ["image-processor", "thumbnail-generator"],
+          "required_by": [
+            "image-processor",
+            "thumbnail-generator"
+          ],
           "runtime_hint": "image-processing",
-          "apt_packages": ["imagemagick"],
+          "apt_packages": [
+            "imagemagick"
+          ],
           "verification": "convert --version"
         },
         "ghostscript": {
           "description": "PDF processing and rendering",
-          "required_by": ["pdf-generator", "pdf-processor"],
+          "required_by": [
+            "pdf-generator",
+            "pdf-processor"
+          ],
           "runtime_hint": "pdf-processing",
-          "apt_packages": ["ghostscript", "poppler-utils"],
+          "apt_packages": [
+            "ghostscript",
+            "poppler-utils"
+          ],
           "verification": "gs --version"
         },
         "ffmpeg": {
           "description": "Video and audio processing",
-          "required_by": ["video-processor", "audio-converter"],
+          "required_by": [
+            "video-processor",
+            "audio-converter"
+          ],
           "runtime_hint": "media-processing",
-          "apt_packages": ["ffmpeg"],
+          "apt_packages": [
+            "ffmpeg"
+          ],
           "verification": "ffmpeg -version"
         }
       },
-      
       "usage_for_tool_creators": {
         "when_creating_browser_tools": {
           "pattern": "Add requires:chrome-browser tag",
-          "example_tags": ["tool", "tool:astral", "workspace:tools", "requires:chrome-browser", "runtime:browser-automation"],
-          "permissions_needed": {"net": true, "run": true, "read": true, "write": true, "env": true}
+          "example_tags": [
+            "tool",
+            "tool:astral",
+            "workspace:tools",
+            "requires:chrome-browser",
+            "runtime:browser-automation"
+          ],
+          "permissions_needed": {
+            "net": true,
+            "run": true,
+            "read": true,
+            "write": true,
+            "env": true
+          }
         },
         "when_creating_image_tools": {
           "pattern": "Add requires:imagemagick tag",
-          "example_tags": ["tool", "tool:image-resize", "requires:imagemagick", "runtime:image-processing"]
+          "example_tags": [
+            "tool",
+            "tool:image-resize",
+            "requires:imagemagick",
+            "runtime:image-processing"
+          ]
         },
         "when_creating_pure_deno_tools": {
           "pattern": "No requires:* tags needed",
-          "example_tags": ["tool", "tool:calculator", "workspace:tools"]
+          "example_tags": [
+            "tool",
+            "tool:calculator",
+            "workspace:tools"
+          ]
         }
       },
-      
       "docker_image_variants": {
         "base": {
           "image": "tools-runner:base",
-          "capabilities": ["deno", "node"],
+          "capabilities": [
+            "deno",
+            "node"
+          ],
           "use_when": "Pure Deno/TypeScript tools, no system dependencies"
         },
         "browser": {
           "image": "tools-runner:browser",
-          "capabilities": ["deno", "node", "chrome-browser"],
+          "capabilities": [
+            "deno",
+            "node",
+            "chrome-browser"
+          ],
           "use_when": "Browser automation (Astral, Puppeteer, Playwright)"
         },
         "full": {
           "image": "tools-runner:full",
-          "capabilities": ["deno", "node", "chrome-browser", "imagemagick", "ghostscript", "ffmpeg"],
+          "capabilities": [
+            "deno",
+            "node",
+            "chrome-browser",
+            "imagemagick",
+            "ghostscript",
+            "ffmpeg"
+          ],
           "use_when": "Multiple capability types needed"
         }
       },
-      
       "verification_guide": {
         "description": "How the system verifies capabilities on tool load",
         "process": [
@@ -93,4 +164,3 @@
     "exclude": []
   }
 }
-

@@ -2,6 +2,7 @@
   "schema_name": "knowledge.v1",
   "title": "Universal Tool Invocation Standard - Complete Guide",
   "tags": [
+    "category:knowledge",
     "knowledge",
     "workspace:knowledge",
     "tool-standard",
@@ -16,14 +17,16 @@
     "last_updated": "2025-11-12",
     "content": {
       "purpose": "Define the ONE standard way ALL tools are invoked in RCRT. This standard ensures consistency, enables agent reasoning, and supports complex patterns from simple calls to multi-agent workflows.",
-      
       "invocation_structure": {
         "standard_format": {
           "action": "create",
           "breadcrumb": {
             "schema_name": "agent.response.v1",
             "title": "Response",
-            "tags": ["agent:response", "session:SESSION_ID"],
+            "tags": [
+              "agent:response",
+              "session:SESSION_ID"
+            ],
             "context": {
               "message": "Your message to user",
               "tool_requests": [
@@ -38,13 +41,16 @@
             }
           }
         },
-        
         "field_definitions": {
           "tool": {
             "type": "string",
             "required": true,
             "description": "Exact tool name from catalog (case-sensitive)",
-            "examples": ["openrouter", "calculator", "breadcrumb-create"]
+            "examples": [
+              "openrouter",
+              "calculator",
+              "breadcrumb-create"
+            ]
           },
           "input": {
             "type": "object",
@@ -57,7 +63,11 @@
             "required": true,
             "description": "Unique correlation ID for request/response matching",
             "format": "{tool-name}-{counter}",
-            "examples": ["llm-001", "calc-1", "search-abc123"]
+            "examples": [
+              "llm-001",
+              "calc-1",
+              "search-abc123"
+            ]
           },
           "return_to_llm": {
             "type": "boolean",
@@ -75,7 +85,6 @@
           }
         }
       },
-      
       "return_to_llm_guide": {
         "decision_tree": "Do you need the result to continue? YES → true, NO → false",
         "use_true_when": [
@@ -94,11 +103,13 @@
           "Direct user feedback"
         ]
       },
-      
       "tool_response_handling": {
         "response_structure": {
           "schema_name": "tool.response.v1",
-          "tags": ["tool:response", "request:YOUR_REQUEST_ID"],
+          "tags": [
+            "tool:response",
+            "request:YOUR_REQUEST_ID"
+          ],
           "context": {
             "request_id": "YOUR_REQUEST_ID",
             "tool": "tool-name",
@@ -107,10 +118,13 @@
             "error": "message if status=error"
           }
         },
-        
         "output_access_by_type": {
           "llm_tools": {
-            "tools": ["openrouter", "venice", "ollama_local"],
+            "tools": [
+              "openrouter",
+              "venice",
+              "ollama_local"
+            ],
             "output_fields": {
               "content": "AI response text",
               "model": "Model used",
@@ -119,7 +133,12 @@
             }
           },
           "utility_tools": {
-            "tools": ["calculator", "random", "echo", "timer"],
+            "tools": [
+              "calculator",
+              "random",
+              "echo",
+              "timer"
+            ],
             "output_fields": {
               "result": "Calculation result (calculator)",
               "numbers": "Array of numbers (random)",
@@ -129,7 +148,11 @@
             }
           },
           "breadcrumb_tools": {
-            "tools": ["breadcrumb-create", "breadcrumb-update", "breadcrumb-search"],
+            "tools": [
+              "breadcrumb-create",
+              "breadcrumb-update",
+              "breadcrumb-search"
+            ],
             "output_fields": {
               "id": "Breadcrumb UUID",
               "success": "Boolean success flag",
@@ -139,7 +162,9 @@
             }
           },
           "workflow_tool": {
-            "tools": ["workflow"],
+            "tools": [
+              "workflow"
+            ],
             "output_fields": {
               "results": "Object with results by step ID",
               "results.stepId": "Access specific step result",
@@ -148,7 +173,9 @@
             }
           },
           "browser_tool": {
-            "tools": ["astral"],
+            "tools": [
+              "astral"
+            ],
             "output_fields": {
               "url": "Current page URL (navigate)",
               "title": "Page title (navigate)",
@@ -159,7 +186,6 @@
             }
           }
         },
-        
         "error_handling": {
           "standard_error_format": {
             "status": "error",
@@ -175,22 +201,24 @@
           ]
         }
       },
-      
       "common_patterns": {
         "pattern_1_simple_call": {
           "description": "Single tool, fire-and-forget, no processing needed",
           "example": {
             "message": "Calculating...",
-            "tool_requests": [{
-              "tool": "calculator",
-              "input": {"expression": "25 * 4"},
-              "requestId": "calc-001",
-              "return_to_llm": false
-            }]
+            "tool_requests": [
+              {
+                "tool": "calculator",
+                "input": {
+                  "expression": "25 * 4"
+                },
+                "requestId": "calc-001",
+                "return_to_llm": false
+              }
+            ]
           },
           "use_case": "calculator, echo, timer - direct results"
         },
-        
         "pattern_2_process_result": {
           "description": "Call tool, process result, respond to user",
           "steps": [
@@ -202,12 +230,21 @@
           "example": {
             "step_1": {
               "message": "Analyzing code...",
-              "tool_requests": [{
-                "tool": "openrouter",
-                "input": {"messages": [{"role": "user", "content": "Analyze: def foo(): return bar"}]},
-                "requestId": "llm-001",
-                "return_to_llm": true
-              }]
+              "tool_requests": [
+                {
+                  "tool": "openrouter",
+                  "input": {
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": "Analyze: def foo(): return bar"
+                      }
+                    ]
+                  },
+                  "requestId": "llm-001",
+                  "return_to_llm": true
+                }
+              ]
             },
             "step_2": "Receive tool.response.v1 with output.content",
             "step_3": {
@@ -217,45 +254,71 @@
           },
           "use_case": "LLM calls, searches that need analysis"
         },
-        
         "pattern_3_parallel_calls": {
           "description": "Multiple independent tool calls execute simultaneously",
           "example": {
             "message": "Checking multiple sources...",
             "tool_requests": [
-              {"tool": "breadcrumb-search", "input": {"query": "weather"}, "requestId": "s1", "return_to_llm": true},
-              {"tool": "breadcrumb-search", "input": {"query": "news"}, "requestId": "s2", "return_to_llm": true}
+              {
+                "tool": "breadcrumb-search",
+                "input": {
+                  "query": "weather"
+                },
+                "requestId": "s1",
+                "return_to_llm": true
+              },
+              {
+                "tool": "breadcrumb-search",
+                "input": {
+                  "query": "news"
+                },
+                "requestId": "s2",
+                "return_to_llm": true
+              }
             ]
           },
           "note": "Both execute in parallel, both results come back",
           "use_case": "Independent operations that can run concurrently"
         },
-        
         "pattern_4_workflow": {
           "description": "Multi-step process with dependencies and variable interpolation",
           "example": {
-            "tool_requests": [{
-              "tool": "workflow",
-              "input": {
-                "steps": [
-                  {"id": "num1", "tool": "random", "input": {}},
-                  {"id": "num2", "tool": "random", "input": {}},
-                  {
-                    "id": "sum",
-                    "tool": "calculator",
-                    "input": {"expression": "${num1.numbers[0]} + ${num2.numbers[0]}"},
-                    "dependencies": ["num1", "num2"]
-                  }
-                ]
-              },
-              "requestId": "wf-001",
-              "return_to_llm": false
-            }]
+            "tool_requests": [
+              {
+                "tool": "workflow",
+                "input": {
+                  "steps": [
+                    {
+                      "id": "num1",
+                      "tool": "random",
+                      "input": {}
+                    },
+                    {
+                      "id": "num2",
+                      "tool": "random",
+                      "input": {}
+                    },
+                    {
+                      "id": "sum",
+                      "tool": "calculator",
+                      "input": {
+                        "expression": "${num1.numbers[0]} + ${num2.numbers[0]}"
+                      },
+                      "dependencies": [
+                        "num1",
+                        "num2"
+                      ]
+                    }
+                  ]
+                },
+                "requestId": "wf-001",
+                "return_to_llm": false
+              }
+            ]
           },
           "variable_syntax": "${stepId.field}",
           "use_case": "Complex orchestration with dependencies"
         },
-        
         "pattern_5_multi_step": {
           "description": "Sequential steps where each depends on previous result",
           "steps": [
@@ -266,7 +329,6 @@
           ],
           "use_case": "Conditional logic, adaptive workflows"
         },
-        
         "pattern_6_error_recovery": {
           "description": "Try primary tool, fallback on error",
           "steps": [
@@ -278,31 +340,38 @@
           "example": "Try openrouter → rate limited → fallback to ollama_local",
           "use_case": "Resilient tool invocation with alternatives"
         },
-        
         "pattern_7_delegation": {
           "description": "Delegate to specialist agent via breadcrumb creation",
           "example": {
-            "tool_requests": [{
-              "tool": "breadcrumb-create",
-              "input": {
-                "schema_name": "tool.creation.request.v1",
-                "title": "Tool Request: Web Search",
-                "tags": ["tool:creation", "assigned-to:tool-creator", "session:session-123"],
-                "context": {
-                  "tool_name": "web-search",
-                  "description": "Search the web",
-                  "requirements": ["HTTP requests", "Parse results"],
-                  "requestedBy": "default-chat-assistant"
-                }
-              },
-              "requestId": "delegate-001",
-              "return_to_llm": false
-            }]
+            "tool_requests": [
+              {
+                "tool": "breadcrumb-create",
+                "input": {
+                  "schema_name": "tool.creation.request.v1",
+                  "title": "Tool Request: Web Search",
+                  "tags": [
+                    "tool:creation",
+                    "assigned-to:tool-creator",
+                    "session:session-123"
+                  ],
+                  "context": {
+                    "tool_name": "web-search",
+                    "description": "Search the web",
+                    "requirements": [
+                      "HTTP requests",
+                      "Parse results"
+                    ],
+                    "requestedBy": "default-chat-assistant"
+                  }
+                },
+                "requestId": "delegate-001",
+                "return_to_llm": false
+              }
+            ]
           },
           "use_case": "Tool creation, complex analysis, specialized tasks"
         }
       },
-      
       "tool_conformance_requirements": {
         "mandatory_fields": {
           "input_schema": "ALL properties must have 'type' and 'description'",
@@ -310,7 +379,6 @@
           "required_arrays": "List mandatory input fields",
           "examples": "Show HOW to access output fields in explanation"
         },
-        
         "response_standards": {
           "success": {
             "status": "success",
@@ -322,32 +390,43 @@
             "tool": "tool-name"
           }
         },
-        
         "naming_convention": {
           "rule": "lowercase-hyphenated",
-          "valid": ["web-search", "openrouter", "breadcrumb-create"],
-          "invalid": ["webSearch", "OpenRouter", "breadcrumb_create"]
+          "valid": [
+            "web-search",
+            "openrouter",
+            "breadcrumb-create"
+          ],
+          "invalid": [
+            "webSearch",
+            "OpenRouter",
+            "breadcrumb_create"
+          ]
         },
-        
         "capability_tags": {
           "description": "Tools declaring system-level dependencies use requires:* tags",
           "examples": {
-            "browser_automation": ["requires:chrome-browser", "runtime:browser-automation"],
-            "image_processing": ["requires:imagemagick"],
-            "pdf_processing": ["requires:ghostscript"],
+            "browser_automation": [
+              "requires:chrome-browser",
+              "runtime:browser-automation"
+            ],
+            "image_processing": [
+              "requires:imagemagick"
+            ],
+            "pdf_processing": [
+              "requires:ghostscript"
+            ],
             "pure_deno": []
           },
           "verification": "System verifies capabilities on tool load and creates system.requirement.v1 if missing",
           "reference": "See system-capabilities.json for complete catalog"
         },
-        
         "output_consistency": {
           "llm_tools": "ALL return: content, model, usage",
           "breadcrumb_ops": "ALL return: success, id",
           "search_tools": "ALL return: results (array), count"
         }
       },
-      
       "validation_checklist": {
         "for_creators": [
           "input_schema defines ALL parameters with types",
@@ -368,7 +447,6 @@
           "Output matches output_schema"
         ]
       },
-      
       "benefits": [
         "One standard for ALL tools - consistent everywhere",
         "Defined once in system prompt - not repeated per tool",
@@ -383,4 +461,3 @@
   "description": "Complete guide to RCRT's universal tool invocation standard",
   "semantic_version": "1.0.0"
 }
-

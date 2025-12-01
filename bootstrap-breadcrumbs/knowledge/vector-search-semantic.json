@@ -4,6 +4,7 @@
   "description": "How pgvector embeddings enable semantic search - finding relevant content by meaning, not keywords",
   "semantic_version": "1.0.0",
   "tags": [
+    "category:knowledge",
     "workspace:knowledge",
     "semantic-search",
     "vector",

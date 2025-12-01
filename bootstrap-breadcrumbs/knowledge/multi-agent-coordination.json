@@ -2,6 +2,7 @@
   "schema_name": "knowledge.v1",
   "title": "Multi-Agent Coordination: Coordinator and Specialist Pattern",
   "tags": [
+    "category:knowledge",
     "workspace:knowledge",
     "agents",
     "coordination",
